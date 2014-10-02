@@ -1,7 +1,11 @@
 #!/bin/bash
 
-for f in $@/*.jpg; do
-   $(dirname $0)/three_colours -p 45 -i "$f"
+files=(${@:2}/*.jpg)
+
+while true; do
+   f=${files[RANDOM % ${#files[@]}]}
+   echo "$(dirname $0)/three_colours.exe $1 -i \"$f\""
+   $(dirname $0)/three_colours.exe $1 -i "$f"
    read -p "Continue? " c
    if [[ $c != "" ]]; then
       break

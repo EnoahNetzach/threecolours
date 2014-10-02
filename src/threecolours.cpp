@@ -44,13 +44,15 @@ using namespace tc;
 ThreeColours::ThreeColours(const std::string & filename,
                            int size, int frame,
                            double bucketThreshold,
-                           double processThreshold)
+                           double foregroundThreshold,
+                           double middlegroundThreshold)
    : m_filename(filename)
    , m_size(size)
    , m_frame(frame)
    , m_knorm({2 / ::sqrt(6), 1. / 6, 1. / 6})
    , m_bucketThreshold(bucketThreshold)
-   , m_processThreshold(processThreshold)
+   , m_foregroundThreshold(foregroundThreshold)
+   , m_middlegroundThreshold(middlegroundThreshold)
 {
 }
 
@@ -69,27 +71,6 @@ auto ThreeColours::run(bool show) throw(std::runtime_error) -> colours_type
       cv::cvtColor(mat, mat, CV_YCrCb2BGR);
       std::get< 1 >(bucket) = mat.at< cv::Vec3b >(0, 0);
    }
-
-#ifndef SERVER
-//   for (auto bucket : finalBuckets)
-//   {
-//      std::cout << std::setfill('0') << std::fixed
-//                << "["<< std::setw(3) << (int)std::get< 1 >(bucket)[0]
-//                << " "<< std::setw(3) << (int)std::get< 1 >(bucket)[1]
-//                << " "<< std::setw(3) << (int)std::get< 1 >(bucket)[2] << "]\t"
-//                << std::hex
-//                << std::setw(2) << (int)std::get< 1 >(bucket)[2]
-//                << std::setw(2) << (int)std::get< 1 >(bucket)[1]
-//                << std::setw(2) << (int)std::get< 1 >(bucket)[0]
-//                << std::dec << "\t#: "
-//                << std::setfill(' ') << std::setw(9)
-//                << std::get< 0 >(bucket).size() << ""
-//                << std::dec << "\t("
-//                << std::setw(7) << std::setprecision(2)
-//                << norm(std::get< 1 >(finalBuckets[2]), std::get< 1 >(bucket), m_knorm) << ")"
-//                << std::endl;
-//   }
-#endif // SERVER
 
    auto fCol = std::get< 1 >(finalBuckets[0]);
    auto mCol = std::get< 1 >(finalBuckets[1]);
@@ -204,14 +185,24 @@ const double & ThreeColours::bucketThreshold() const
    return m_bucketThreshold;
 }
 
-double & ThreeColours::processThreshold()
+double & ThreeColours::foregroundThreshold()
 {
-   return m_processThreshold;
+   return m_foregroundThreshold;
 }
 
-const double & ThreeColours::processThreshold() const
+const double & ThreeColours::foregroundThreshold() const
 {
-   return m_processThreshold;
+   return m_foregroundThreshold;
+}
+
+double & ThreeColours::middlegroundThreshold()
+{
+   return m_middlegroundThreshold;
+}
+
+const double & ThreeColours::middlegroundThreshold() const
+{
+   return m_middlegroundThreshold;
 }
 
 cv::Mat ThreeColours::loadFile() const throw(std::runtime_error)
@@ -354,11 +345,11 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
    {
       auto n1 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b1));
       auto n2 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b2));
-      if ((n1 > m_processThreshold) == (n2 > m_processThreshold))
+      if ((n1 > m_foregroundThreshold) == (n2 > m_foregroundThreshold))
       {
          return std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
       }
-      return n1 > m_processThreshold;
+      return n1 > m_foregroundThreshold;
    });
    foregroundBucket = buckets[0];
    buckets.erase(buckets.begin());
@@ -375,7 +366,7 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
       {
          std::swap(foregroundBucket, middlegroundBucket);
       }
-      if (norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm) < m_processThreshold)
+      if (norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm) < m_middlegroundThreshold)
       {
          double val = ((int)std::get< 1 >(middlegroundBucket)[0] - (int)std::get< 1 >(backgroundBucket)[0]);
          if (val != 0) std::get< 1 >(middlegroundBucket)[0] += 1 / val;

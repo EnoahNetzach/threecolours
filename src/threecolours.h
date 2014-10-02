@@ -31,7 +31,8 @@ public:
 
    ThreeColours(const std::string & filename = "", int size = 100,
                 int frame = 10, double bucketThreshold = 15,
-                double processThreshold = 150);
+                double foregroundThreshold = 150,
+                double middlegroundThreshold = 150);
 
    colours_type run(bool show = false) throw (std::runtime_error);
 
@@ -43,8 +44,10 @@ public:
    const int & frame() const;
    double & bucketThreshold();
    const double & bucketThreshold() const;
-   double & processThreshold();
-   const double & processThreshold() const;
+   double & foregroundThreshold();
+   const double & foregroundThreshold() const;
+   double & middlegroundThreshold();
+   const double & middlegroundThreshold() const;
 
 protected:
    cv::Mat loadFile() const throw (std::runtime_error);
@@ -58,7 +61,8 @@ private:
    int m_frame;
    std::vector< double > m_knorm;
    double m_bucketThreshold;
-   double m_processThreshold;
+   double m_foregroundThreshold;
+   double m_middlegroundThreshold;
 };
 
 }

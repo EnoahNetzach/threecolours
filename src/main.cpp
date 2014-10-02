@@ -23,7 +23,8 @@ int main(int argc, char * argv[])
    int size = 100;
    int frame = 10;
    double bucketThreshold = 15;
-   double processThreshold = 150;
+   double foregroundThreshold = 150;
+   double middlegroundThreshold = 150;
    bool show = false;
    std::string output = "json";
 
@@ -32,11 +33,12 @@ int main(int argc, char * argv[])
    visible.add_options()
       ("help,h", "produce help message")
       ("size,s", po::value< int >(& size)->default_value(100), "")
-      ("frame,f", po::value< int >(& frame)->default_value(10), "")
-      ("bthreshold,t", po::value< double >(& bucketThreshold)->default_value(15), "bucket threshold")
-      ("sthreshold,p", po::value< double >(& processThreshold)->default_value(150), "process threshold")
-      ("show,w", po::value< bool >(& show)->default_value(false), "")
-      ("output,o", po::value< std::string >(& output)->default_value("xml"), "output type (json|xml|txt)")
+      ("frame,r", po::value< int >(& frame)->default_value(10), "")
+      ("bth,t", po::value< double >(& bucketThreshold)->default_value(15), "bucket threshold")
+      ("fth,f", po::value< double >(& foregroundThreshold)->default_value(80), "foreground threshold")
+      ("mth,m", po::value< double >(& middlegroundThreshold)->default_value(45), "middleground threshold")
+      ("show,w", po::value< bool >(& show)->default_value(true), "")
+      ("output,o", po::value< std::string >(& output)->default_value("json"), "output type (json|xml|txt)")
    ;
 
    po::options_description hidden("Hidden options");
@@ -61,9 +63,12 @@ int main(int argc, char * argv[])
       std::cout << "Usage: " << argv[0] << " [OPTIONS] FILE" << std::endl;
       return -1;
    }
+   if (vm.count("show")) {
+      show = true;
+   }
 #endif // SERVER
 
-   tc::ThreeColours threeColours(filename, size, frame, bucketThreshold, processThreshold);
+   tc::ThreeColours threeColours(filename, size, frame, bucketThreshold, foregroundThreshold);
 
    auto colours = threeColours.run(show);
 
