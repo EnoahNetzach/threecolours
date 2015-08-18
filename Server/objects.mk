@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lopencv_core.so -lopencv_highgui.so -lopencv_imgproc.so
+LIBS := -lopencv_core -lopencv_highgui -lopencv_imgproc
 
