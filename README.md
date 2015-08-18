@@ -49,6 +49,9 @@ And the following libraries:
   - *opencv_highgui*
   - *boost_program_options* (only in Debug and Release)
 
+The tested versions are 1.56 for *[boost](http://www.boost.org/doc/libs/1_56_0/)*
+and 2.4.6 for *[opencv](http://docs.opencv.org/2.4.6/modules/refman.html)*.
+
 ## Documentation
 The main class is **`tc::ThreeColours`**, all the parameters passed in the constructor (with signature
 **`tc::ThreeColours::ThreeColours(const std::string &, int, int, double, double, double)`**) are optional and can be configured later
