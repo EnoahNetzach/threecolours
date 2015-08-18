@@ -41,8 +41,8 @@ int main(int argc, char * argv[])
    int size = 100;
    int frame = 10;
    double bucketThreshold = 15;
-   double foregroundThreshold = 150;
-   double middlegroundThreshold = 150;
+   double foregroundThreshold = 80;
+   double middlegroundThreshold = 45;
    bool show = false;
    std::string output = "json";
 
@@ -50,11 +50,11 @@ int main(int argc, char * argv[])
    po::options_description visible("Allowed options");
    visible.add_options()
       ("help,h", "produce help message")
-      ("size,s", po::value< int >(& size)->default_value(100), "")
-      ("frame,r", po::value< int >(& frame)->default_value(10), "")
-      ("bth,t", po::value< double >(& bucketThreshold)->default_value(15), "bucket threshold")
-      ("fth,f", po::value< double >(& foregroundThreshold)->default_value(80), "foreground threshold")
-      ("mth,m", po::value< double >(& middlegroundThreshold)->default_value(45), "middleground threshold")
+      ("size,s", po::value< int >(& size)->default_value(size), "the image will be resized to this dimension before computing")
+      ("frame,r", po::value< int >(& frame)->default_value(frame), "the size of the border")
+      ("bth,t", po::value< double >(& bucketThreshold)->default_value(bucketThreshold), "bucket threshold")
+      ("fth,f", po::value< double >(& foregroundThreshold)->default_value(foregroundThreshold), "foreground threshold")
+      ("mth,m", po::value< double >(& middlegroundThreshold)->default_value(middlegroundThreshold), "middleground threshold")
       ("show,w", "show a result example")
       ("output,o", po::value< std::string >(& output)->default_value("json"), "output type (json|xml|csv)")
    ;

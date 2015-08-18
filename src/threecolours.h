@@ -31,8 +31,8 @@ public:
 
    ThreeColours(const std::string & filename = "", int size = 100,
                 int frame = 10, double bucketThreshold = 15,
-                double foregroundThreshold = 150,
-                double middlegroundThreshold = 150);
+                double foregroundThreshold = 80,
+                double middlegroundThreshold = 45);
 
    colours_type run(bool show = false) throw (std::runtime_error);
 
