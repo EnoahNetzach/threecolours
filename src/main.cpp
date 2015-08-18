@@ -33,6 +33,8 @@ enum class OutputType
 int main(int argc, char * argv[])
 {
    if (argc == 1) {
+      std::cerr << "Usage: " << argv[0] << " FILE" << std::endl;
+
       return ExtiValue::ERROR_NO_FILE;
    }
    std::string filename = argv[1];
@@ -75,7 +77,8 @@ int main(int argc, char * argv[])
    }
    else if (filename == "")
    {
-      std::cout << "Usage: " << argv[0] << " [OPTIONS] FILE" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " [OPTIONS] FILE" << std::endl;
+
       return ExtiValue::ERROR_NO_FILE;
    }
 
@@ -98,7 +101,8 @@ int main(int argc, char * argv[])
 
    if (outputTypes.count(output) == 0)
    {
-      std::cout << "The option -o must be one of \"json\", \"xml\", \"csv\", " << output << " given" << std::endl;
+      std::cerr << "The option -o must be one of \"json\", \"xml\", \"csv\", " << output << " given" << std::endl;
+
       return ExtiValue::ERROR_WRONG_OUTPUT_FORMAT;
    }
 
