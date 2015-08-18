@@ -112,9 +112,9 @@ int main(int argc, char * argv[])
    case OutputType::JSON:
       outputFormat =
             "{"
-               "\"foreground\":{\"r\":%1$i,\"g\":%2$i,\"b\":%3$i,\"hex\":\"%1$x%2$x%3$x\"},"
-               "\"middleground\":{\"r\":%4$i,\"g\":%5$i,\"b\":%6$i,\"hex\":\"%4$x%5$x%6$x\"},"
-               "\"background\":{\"r\":%7$i,\"g\":%8$i,\"b\":%9$i,\"hex\":\"%7$x%8$x%9$x\"}"
+               "\"foreground\":{\"r\":%1$i,\"g\":%2$i,\"b\":%3$i,\"hex\":\"%1$02x%2$02x%3$02x\"},"
+               "\"middleground\":{\"r\":%4$i,\"g\":%5$i,\"b\":%6$i,\"hex\":\"%4$02x%5$02x%6$02x\"},"
+               "\"background\":{\"r\":%7$i,\"g\":%8$i,\"b\":%9$i,\"hex\":\"%7$02x%8$02x%9$02x\"}"
             "}";
       break;
    case OutputType::XML:
@@ -125,27 +125,27 @@ int main(int argc, char * argv[])
                   "<red>%1$i</red>"
                   "<green>%2$i</green>"
                   "<blue>%3$i</blue>"
-                  "<hex>%1$x%2$x%3$x</hex>"
+                  "<hex>%1$02x%2$02x%3$02x</hex>"
                "</foreground>"
                "<middleground>"
                   "<red>%4$i</red>"
                   "<green>%5$i</green>"
                   "<blue>%6$i</blue>"
-                  "<hex>%4$x%5$x%6$x</hex>"
+                  "<hex>%4$02x%5$02x%6$02x</hex>"
                "</middleground>"
                "<background>"
                   "<red>%7$i</red>"
                   "<green>%8$i</green>"
                   "<blue>%9$i</blue>"
-                  "<hex>%7$x%8$x%9$x</hex>"
+                  "<hex>%7$02x%8$02x%9$02x</hex>"
                "</background>"
             "</colours>";
       break;
    case OutputType::CSV:
       outputFormat =
-            "%1$i,%2$i,%3$i,%1$x%2$x%3$x\n"
-            "%4$i,%5$i,%6$i,%4$x%5$x%6$x\n"
-            "%7$i,%8$i,%9$i,%7$x%8$x%9$x\n";
+            "%1$i,%2$i,%3$i,%1$02x%2$02x%3$02x\n"
+            "%4$i,%5$i,%6$i,%4$02x%5$02x%6$02x\n"
+            "%7$i,%8$i,%9$i,%7$02x%8$02x%9$02x\n";
       break;
    }
 
