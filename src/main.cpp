@@ -4,6 +4,7 @@
 #include <string>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 #ifndef SERVER
 #include <boost/program_options.hpp>
 #endif // SERVER
@@ -13,6 +14,13 @@
 #ifndef SERVER
 namespace po = boost::program_options;
 #endif // SERVER
+
+enum class OutputType
+{
+   JSON,
+   XML,
+   CSV,
+};
 
 int main(int argc, char * argv[])
 {
@@ -38,7 +46,7 @@ int main(int argc, char * argv[])
       ("fth,f", po::value< double >(& foregroundThreshold)->default_value(80), "foreground threshold")
       ("mth,m", po::value< double >(& middlegroundThreshold)->default_value(45), "middleground threshold")
       ("show,w", po::value< bool >(& show)->default_value(true), "")
-      ("output,o", po::value< std::string >(& output)->default_value("json"), "output type (json|xml|txt)")
+      ("output,o", po::value< std::string >(& output)->default_value("json"), "output type (json|xml|csv)")
    ;
 
    po::options_description hidden("Hidden options");
@@ -68,76 +76,72 @@ int main(int argc, char * argv[])
    }
 #endif // SERVER
 
-   tc::ThreeColours threeColours(filename, size, frame, bucketThreshold, foregroundThreshold);
+   tc::ThreeColours threeColours(filename, size, frame, bucketThreshold, foregroundThreshold, middlegroundThreshold);
 
    auto colours = threeColours.run(show);
 
-   std::map< std::string, int > outputTypes = {
-      {"json", 0},
-      {"xml", 1},
-      {"txt", 2}
+   std::map< std::string, OutputType > outputTypes = {
+      {"json", OutputType::JSON},
+      {"xml", OutputType::XML},
+      {"csv", OutputType::CSV}
    };
 
    boost::algorithm::to_lower(output);
 
    if (outputTypes.count(output) == 0)
    {
-      std::cout << "The option -o must be one of \"json\", \"xml\", \"txt\", " << output << " given" << std::endl;
+      std::cout << "The option -o must be one of \"json\", \"xml\", \"csv\", " << output << " given" << std::endl;
       return -2;
    }
+
+      std::string outputFormat;
    switch (outputTypes.at(output))
    {
-   default:
-   case 0: // json
-      std::cout << std::setfill('0')
-                << "{\"foreground\":"
-                << "{\"r\":" << (int)colours[0][2] << ",\"g\":" << (int)colours[0][1] << ",\"b\":" << (int)colours[0][0]
-                << ",\"hex\":\"" << std::hex
-                << std::setw(2) << (int)colours[0][2]
-                << std::setw(2) << (int)colours[0][1]
-                << std::setw(2) << (int)colours[0][0]
-                << "\"},\"middleground\":{"
-                << std::dec
-                << "\"r\":" << (int)colours[1][2] << ",\"g\":" << (int)colours[1][1] << ",\"b\":" << (int)colours[1][0]
-                << ",\"hex\":\"" << std::hex
-                << std::setw(2) << (int)colours[1][2]
-                << std::setw(2) << (int)colours[1][1]
-                << std::setw(2) << (int)colours[1][0]
-                << "\"},\"background\":{"
-                << std::dec
-                << "\"r\":" << (int)colours[2][2] << ",\"g\":" << (int)colours[2][1] << ",\"b\":" << (int)colours[2][0]
-                << ",\"hex\":\"" << std::hex
-                << std::setw(2) << (int)colours[2][2]
-                << std::setw(2) << (int)colours[2][1]
-                << std::setw(2) << (int)colours[2][0]
-                << "\"}}" << std::endl;
+   case OutputType::JSON:
+      outputFormat =
+            "{"
+               "\"foreground\":{\"r\":%1$i,\"g\":%2$i,\"b\":%3$i,\"hex\":\"%1$x%2$x%3$x\"},"
+               "\"middleground\":{\"r\":%4$i,\"g\":%5$i,\"b\":%6$i,\"hex\":\"%4$x%5$x%6$x\"},"
+               "\"background\":{\"r\":%7$i,\"g\":%8$i,\"b\":%9$i,\"hex\":\"%7$x%8$x%9$x\"}"
+            "}";
       break;
-   case 1: // xml
-      std::cout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<colours>"
-                << "\t<foreground>\n"
-                << "\t\t<red>" << (int)colours[0][2] << "</red>\n"
-                << "\t\t<green>" << (int)colours[0][1] << "</green>\n"
-                << "\t\t<blue>" << (int)colours[0][0] << "</blue>\n"
-                << "\t</foreground>\n"
-                << "\t<middleground>\n"
-                << "\t\t<red>" << (int)colours[1][2] << "</red>\n"
-                << "\t\t<green>" << (int)colours[1][1] << "</green>\n"
-                << "\t\t<blue>" << (int)colours[1][0] << "</blue>\n"
-                << "\t</middleground>\n"
-                << "\t<background>\n"
-                << "\t\t<red>" << (int)colours[2][2] << "</red>\n"
-                << "\t\t<green>" << (int)colours[2][1] << "</green>\n"
-                << "\t\t<blue>" << (int)colours[2][0] << "</blue>\n"
-                << "\t</background>\n</colours>"
-                << std::endl;
+   case OutputType::XML:
+      outputFormat =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<colours>"
+               "<foreground>"
+                  "<red>%1$i</red>"
+                  "<green>%2$i</green>"
+                  "<blue>%3$i</blue>"
+                  "<hex>%1$x%2$x%3$x</hex>"
+               "</foreground>"
+               "<middleground>"
+                  "<red>%4$i</red>"
+                  "<green>%5$i</green>"
+                  "<blue>%6$i</blue>"
+                  "<hex>%4$x%5$x%6$x</hex>"
+               "</middleground>"
+               "<background>"
+                  "<red>%7$i</red>"
+                  "<green>%8$i</green>"
+                  "<blue>%9$i</blue>"
+                  "<hex>%7$x%8$x%9$x</hex>"
+               "</background>"
+            "</colours>";
       break;
-   case 2: // txt
-      std::cout << (int)colours[0][2] << "," << (int)colours[0][1] << "," << (int)colours[0][0] << ";"
-                << (int)colours[1][2] << "," << (int)colours[1][1] << "," << (int)colours[1][0] << ";"
-                << (int)colours[2][2] << "," << (int)colours[2][1] << "," << (int)colours[2][0]
-                << std::endl;
+   case OutputType::CSV:
+      outputFormat =
+            "%1$i,%2$i,%3$i,%1$x%2$x%3$x\n"
+            "%4$i,%5$i,%6$i,%4$x%5$x%6$x\n"
+            "%7$i,%8$i,%9$i,%7$x%8$x%9$x\n";
       break;
    }
 
-	return 0;
+   std::cout << boost::format(outputFormat)
+      % (int)colours[0][2] % (int)colours[0][1] % (int)colours[0][0]
+      % (int)colours[1][2] % (int)colours[1][1] % (int)colours[1][0]
+      % (int)colours[2][2] % (int)colours[2][1] % (int)colours[2][0]
+      << std::endl;
+
+   return 0;
 }

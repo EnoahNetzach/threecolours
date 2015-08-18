@@ -11,6 +11,10 @@
 #include <cmath>
 #include <sys/stat.h>
 #include <utility>
+#ifdef DEBUG
+#include <iostream>
+#include <boost/format.hpp>
+#endif // DEBUG
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -41,11 +45,13 @@ double norm(T1_ v1, T2_ v2, const std::vector< P2_ > & k)
 
 using namespace tc;
 
-ThreeColours::ThreeColours(const std::string & filename,
-                           int size, int frame,
-                           double bucketThreshold,
-                           double foregroundThreshold,
-                           double middlegroundThreshold)
+ThreeColours::ThreeColours(
+      const std::string & filename,
+      int size, int frame,
+      double bucketThreshold,
+      double foregroundThreshold,
+      double middlegroundThreshold
+)
    : m_filename(filename)
    , m_size(size)
    , m_frame(frame)
@@ -316,11 +322,17 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
    }
    std::sort(frameBuckets.begin(), frameBuckets.end(), [](const bucket_tuple_type & b1, const bucket_tuple_type & b2) -> bool
    {
+      bool order;
       if (std::get< 0 >(b1).size() == std::get< 0 >(b2).size())
       {
-         return (int)std::get< 1 >(b1)[0] > (int)std::get< 1 >(b2)[0];
+         order = (int)std::get< 1 >(b1)[0] > (int)std::get< 1 >(b2)[0];
       }
-      return std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
+      else
+      {
+         order = std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
+      }
+
+      return order;
    });
 
    backgroundBucket = frameBuckets[0];
@@ -341,22 +353,45 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
       std::get< 1 >(bucket)[1] = pixel1 / std::get< 0 >(bucket).size();
       std::get< 1 >(bucket)[2] = pixel2 / std::get< 0 >(bucket).size();
    }
-   std::sort(buckets.begin(), buckets.end(), [this, backgroundBucket](const bucket_tuple_type & b1, const bucket_tuple_type & b2)
+   std::sort(buckets.begin(), buckets.end(), [this, backgroundBucket](const bucket_tuple_type & b1, const bucket_tuple_type & b2) -> bool
    {
-      auto n1 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b1));
-      auto n2 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b2));
+      bool order;
+      auto n1 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b1), m_knorm);
+      auto n2 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b2), m_knorm);
       if ((n1 > m_foregroundThreshold) == (n2 > m_foregroundThreshold))
       {
-         return std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
+//         order = n1 > n2;
+         order = std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
       }
-      return n1 > m_foregroundThreshold;
+      else
+      {
+         order = n1 > m_foregroundThreshold;
+      }
+
+      return order;
    });
+
    foregroundBucket = buckets[0];
    buckets.erase(buckets.begin());
+
    if (buckets.size() > 0)
    {
       std::sort(buckets.begin(), buckets.end(), [this, backgroundBucket](const bucket_tuple_type & b1, const bucket_tuple_type & b2)
       {
+         bool order;
+         auto n1 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b1), m_knorm);
+         auto n2 = norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b2), m_knorm);
+         if ((n1 > m_middlegroundThreshold) == (n2 > m_middlegroundThreshold))
+         {
+            order = n1 > n2;
+//            order = std::get< 0 >(b1).size() > std::get< 0 >(b2).size();
+         }
+         else
+         {
+            order = n1 > m_middlegroundThreshold;
+         }
+
+         return order;
          return norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b1)) > norm(std::get< 1 >(backgroundBucket), std::get< 1 >(b2));
       });
       middlegroundBucket = buckets[0];
@@ -366,10 +401,37 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
       {
          std::swap(foregroundBucket, middlegroundBucket);
       }
-      if (norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm) < m_middlegroundThreshold)
+
+      double previousVal = 0;
+      while (norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm) < m_middlegroundThreshold)
       {
          double val = ((int)std::get< 1 >(middlegroundBucket)[0] - (int)std::get< 1 >(backgroundBucket)[0]);
-         if (val != 0) std::get< 1 >(middlegroundBucket)[0] += 1 / val;
+         if (val != 0 && val != previousVal)
+         {
+#ifdef DEBUG
+            std::cout << boost::format("val: %d\nmg: {%i, %i, %i} (%d / %d)\nbg: {%i, %i, %i}")
+            % val
+            % (int)std::get< 1 >(middlegroundBucket)[0]
+            % (int)std::get< 1 >(middlegroundBucket)[1]
+            % (int)std::get< 1 >(middlegroundBucket)[2]
+            % norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm)
+            % m_middlegroundThreshold
+            % (int)std::get< 1 >(backgroundBucket)[0]
+            % (int)std::get< 1 >(backgroundBucket)[1]
+            % (int)std::get< 1 >(backgroundBucket)[2]
+            << std::endl;
+#endif // DEBUG
+            std::get< 1 >(middlegroundBucket)[0] += 1 / val;
+         }
+         else
+         {
+#ifdef DEBUG
+            std::cout << "mg = fg" << std::endl;
+#endif // DEBUG
+            middlegroundBucket = foregroundBucket;
+            break;
+         }
+         previousVal = val;
       }
    }
    else
