@@ -399,6 +399,12 @@ auto ThreeColours::processBuckets(buckets_type frameBuckets, buckets_type bucket
       if (norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm)
           > norm(std::get< 1 >(backgroundBucket), std::get< 1 >(foregroundBucket), m_knorm))
       {
+#ifdef DEBUG
+         std::cout << boost::format("swap fg: (%d) & bg: (%d)")
+            % norm(std::get< 1 >(backgroundBucket), std::get< 1 >(foregroundBucket), m_knorm)
+            % norm(std::get< 1 >(backgroundBucket), std::get< 1 >(middlegroundBucket), m_knorm)
+            << std::endl;
+#endif // DEBUG
          std::swap(foregroundBucket, middlegroundBucket);
       }
 

@@ -15,6 +15,14 @@
 namespace po = boost::program_options;
 #endif // SERVER
 
+enum ExtiValue
+{
+   OK_END = 0,
+   OK_HELP = 1,
+   ERROR_NO_FILE = -1,
+   ERROR_WRONG_OUTPUT_FORMAT = -2,
+};
+
 enum class OutputType
 {
    JSON,
@@ -25,7 +33,7 @@ enum class OutputType
 int main(int argc, char * argv[])
 {
    if (argc == 1) {
-      return -1;
+      return ExtiValue::ERROR_NO_FILE;
    }
    std::string filename = argv[1];
    int size = 100;
@@ -61,16 +69,16 @@ int main(int argc, char * argv[])
    po::store(po::command_line_parser(argc, argv).options(cmdline_options).run(), vm);
    po::notify(vm);
 
-
    if (vm.count("help")) {
        std::cout << cmdline_options << std::endl;
-       return 1;
+       return ExtiValue::OK_HELP;
    }
    else if (filename == "")
    {
       std::cout << "Usage: " << argv[0] << " [OPTIONS] FILE" << std::endl;
-      return -1;
+      return ExtiValue::ERROR_NO_FILE;
    }
+
    if (vm.count("show")) {
       show = true;
    }
@@ -91,7 +99,7 @@ int main(int argc, char * argv[])
    if (outputTypes.count(output) == 0)
    {
       std::cout << "The option -o must be one of \"json\", \"xml\", \"csv\", " << output << " given" << std::endl;
-      return -2;
+      return ExtiValue::ERROR_WRONG_OUTPUT_FORMAT;
    }
 
    std::string outputFormat;
@@ -143,5 +151,5 @@ int main(int argc, char * argv[])
       % (int)colours[2][2] % (int)colours[2][1] % (int)colours[2][0]
       << std::endl;
 
-   return 0;
+   return ExtiValue::OK_END;
 }
