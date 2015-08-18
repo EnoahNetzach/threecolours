@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
       ("bth,t", po::value< double >(& bucketThreshold)->default_value(15), "bucket threshold")
       ("fth,f", po::value< double >(& foregroundThreshold)->default_value(80), "foreground threshold")
       ("mth,m", po::value< double >(& middlegroundThreshold)->default_value(45), "middleground threshold")
-      ("show,w", po::value< bool >(& show)->default_value(true), "")
+      ("show,w", "show a result example")
       ("output,o", po::value< std::string >(& output)->default_value("json"), "output type (json|xml|csv)")
    ;
 
