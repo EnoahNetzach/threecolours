@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
       return -2;
    }
 
-      std::string outputFormat;
+   std::string outputFormat;
    switch (outputTypes.at(output))
    {
    case OutputType::JSON:
